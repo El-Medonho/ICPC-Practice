@@ -26,61 +26,70 @@ using namespace std;
 typedef long long ll;
 typedef unsigned long long ull;
 typedef long double ld;
-typedef tree<int,null_type, less<int>, rb_tree_tag, tree_order_statistics_node_update> ordered_set;
-typedef tree<int,null_type, less_equal<int>, rb_tree_tag, tree_order_statistics_node_update> multiordered_set;  //--set.lower_bound(value) ao inves de find
+typedef tree<ll,null_type, less<ll>, rb_tree_tag, tree_order_statistics_node_update> ordered_set;
+typedef tree<ll,null_type, less_equal<ll>, rb_tree_tag, tree_order_statistics_node_update> multiordered_set;  //--set.lower_bound(value) ao inves de find
 
-mt19937 rng((int) std::chrono::steady_clock::now().time_since_epoch().count());
+mt19937 rng((ll) std::chrono::steady_clock::now().time_since_epoch().count());
 
-const int mod = 998244353;
+const ll mod = 1e9+7;
 const ll inf = 1e18+5;
 
-ll expo(ll b, ll e){
-    ll ans = 1;
-    while(e){
-        if(e&1) ans = ans * b % mod;
-        b = b*b%mod;
-        e>>=1;
-    }
-    return ans;
-}
-
 signed solve(){
-    ll ans = 0;
-    string s; cin >> s;
-    int n = s.size();
-    vector<int> arr(n);
     
-    vector<vector<ll>> cnt(n, vector<ll>(10, 0ll)), icnt(n, vector<ll>(10, 0ll));
-    vector<ll> fat(3*n+5, 1LL);
-    for(int i = 2; i <= 3*n; i++) fat[i] = fat[i-1] * i % mod;
-    vector<ll> last(9, n);
+    ll n,m,c; cin >> n >> m >> c;
 
+    vector<ll> save(n);
+    set<ll> st;
+    
+    for(ll i = 0; i < n; i++){
+        ll x; cin >> x; 
+        save[i] = x;
+        st.insert(x);
+    }
+    
+    ll mm = m;
+    ll l = -1;
+    map<ll,ll> mp;
+    m = 0;
+    for(ll x: st){
+        mp[x] = m++;
+    }
+    
+    vector<ll> mul(m, 0);
+    for(ll x: st){
+        if(l != -1){
+            mul[mp[x]-1] = x-l;
+        }
+        l = x;
+    }
+    mul[m-1] = mm - (l - (*mp.begin()).first);
+    
+    vector<ll> arr(m, 0), sum(2*m+2, 0);
 
-    for(int i = 0; i < s.size(); i++){
-        int x = s[i]-'0';
-        
-        arr[i] = x;
-        if(i > 0) for(int j = 0; j < 10; j++) cnt[i][j] = cnt[i-1][j];
-
-        cnt[i][x]++;
+    for(ll i = 0; i < n; i++){
+        arr[mp[save[i]]]++;
     }
 
-    for(int i = n-1; i > -1; i--){
-        if(i != n-1) for(int j = 0; j < 10; j++) icnt[i][j] = icnt[i+1][j];
-        icnt[i][arr[i]]++;
+    for(ll i = 0; i < 2*m+1; i++){
+        if(i) sum[i] = sum[i-1];
+        sum[i] += arr[i%m];
     }
 
+    ll base = sum[0], ind = 0;
 
-    for(int i = 0; i < n; i++){
-        if(arr[i] == 9) continue;
-        int p = cnt[i][arr[i]]-1, q = icnt[i][arr[i]+1];
-        if(q > 0)
-            ans += fat[p+q] * expo(fat[p+1] * fat[p+q-(p+1)] % mod, mod-2) % mod;
-        ans %= mod;
+    ll ans = 0;
+
+    for(ll i = 0; i <= 2*m; i++){
+        while(sum[i] - base >= c){
+            ans += (sum[i] - base) * mul[ind];
+            ind++; base = sum[ind];
+            if(ind == m) break;
+        }
+        if(ind == m) break;
     }
-
 
     cout << ans << endl;
+
 
     return 0;
 }
@@ -88,7 +97,7 @@ signed solve(){
 signed main(){
     ios_base::sync_with_stdio(false), cin.tie(nullptr);
 
-    int t = 1;
+    ll t = 1;
     // cin >> t;
     while(t--){
         solve();

@@ -31,56 +31,25 @@ typedef tree<int,null_type, less_equal<int>, rb_tree_tag, tree_order_statistics_
 
 mt19937 rng((int) std::chrono::steady_clock::now().time_since_epoch().count());
 
-const int mod = 998244353;
+const int mod = 1e9+7;
 const ll inf = 1e18+5;
 
-ll expo(ll b, ll e){
-    ll ans = 1;
-    while(e){
-        if(e&1) ans = ans * b % mod;
-        b = b*b%mod;
-        e>>=1;
-    }
-    return ans;
-}
-
 signed solve(){
-    ll ans = 0;
-    string s; cin >> s;
-    int n = s.size();
-    vector<int> arr(n);
     
-    vector<vector<ll>> cnt(n, vector<ll>(10, 0ll)), icnt(n, vector<ll>(10, 0ll));
-    vector<ll> fat(3*n+5, 1LL);
-    for(int i = 2; i <= 3*n; i++) fat[i] = fat[i-1] * i % mod;
-    vector<ll> last(9, n);
+    int n; cin >> n;
+    ll ans = 0;
 
-
-    for(int i = 0; i < s.size(); i++){
-        int x = s[i]-'0';
-        
-        arr[i] = x;
-        if(i > 0) for(int j = 0; j < 10; j++) cnt[i][j] = cnt[i-1][j];
-
-        cnt[i][x]++;
-    }
-
-    for(int i = n-1; i > -1; i--){
-        if(i != n-1) for(int j = 0; j < 10; j++) icnt[i][j] = icnt[i+1][j];
-        icnt[i][arr[i]]++;
-    }
-
-
+    vector<ll> freq(n+1, 0);
     for(int i = 0; i < n; i++){
-        if(arr[i] == 9) continue;
-        int p = cnt[i][arr[i]]-1, q = icnt[i][arr[i]+1];
-        if(q > 0)
-            ans += fat[p+q] * expo(fat[p+1] * fat[p+q-(p+1)] % mod, mod-2) % mod;
-        ans %= mod;
+        int x; cin >> x; freq[x]++;
     }
 
+    for(int i = 0; i <=n; i++){
+        ans += freq[i]*(freq[i]-1)/2 * (n-freq[i]);
+    }
 
     cout << ans << endl;
+
 
     return 0;
 }

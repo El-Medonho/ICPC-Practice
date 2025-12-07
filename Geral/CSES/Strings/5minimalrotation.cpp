@@ -13,86 +13,76 @@
 // ⢸⠇⡜⣿⡟⠄⠄⠄⠈⠙⣿⣿⣿⣿⣿⣿⣿⣿⠟⣱⣻⣿⣿⣿⣿⣿⠟⠁⢳⠃⣿⣿⣿
 // ⠄⣰⡗⠹⣿⣄⠄⠄⠄⢀⣿⣿⣿⣿⣿⣿⠟⣅⣥⣿⣿⣿⣿⠿⠋⠄⠄⣾⡌⢠⣿⡿⠃
 // ⠜⠋⢠⣷⢻⣿⣿⣶⣾⣿⣿⣿⣿⠿⣛⣥⣾⣿⠿⠟⠛⠉⠄⠄
-
-
+ 
 #include "bits/stdc++.h"
-#include <ext/pb_ds/tree_policy.hpp>
-#include <ext/pb_ds/assoc_container.hpp>
-
-using namespace __gnu_pbds;
+ 
 using namespace std;
-
-#define endl "\n"
+ 
+#define endl '\n'
+ 
 typedef long long ll;
-typedef unsigned long long ull;
-typedef long double ld;
-typedef tree<int,null_type, less<int>, rb_tree_tag, tree_order_statistics_node_update> ordered_set;
-typedef tree<int,null_type, less_equal<int>, rb_tree_tag, tree_order_statistics_node_update> multiordered_set;  //--set.lower_bound(value) ao inves de find
-
+ 
 mt19937 rng((int) std::chrono::steady_clock::now().time_since_epoch().count());
-
-const int mod = 998244353;
-const ll inf = 1e18+5;
-
-ll expo(ll b, ll e){
-    ll ans = 1;
-    while(e){
-        if(e&1) ans = ans * b % mod;
-        b = b*b%mod;
-        e>>=1;
-    }
-    return ans;
-}
-
-signed solve(){
-    ll ans = 0;
-    string s; cin >> s;
-    int n = s.size();
-    vector<int> arr(n);
-    
-    vector<vector<ll>> cnt(n, vector<ll>(10, 0ll)), icnt(n, vector<ll>(10, 0ll));
-    vector<ll> fat(3*n+5, 1LL);
-    for(int i = 2; i <= 3*n; i++) fat[i] = fat[i-1] * i % mod;
-    vector<ll> last(9, n);
-
-
-    for(int i = 0; i < s.size(); i++){
-        int x = s[i]-'0';
-        
-        arr[i] = x;
-        if(i > 0) for(int j = 0; j < 10; j++) cnt[i][j] = cnt[i-1][j];
-
-        cnt[i][x]++;
-    }
-
-    for(int i = n-1; i > -1; i--){
-        if(i != n-1) for(int j = 0; j < 10; j++) icnt[i][j] = icnt[i+1][j];
-        icnt[i][arr[i]]++;
-    }
-
-
-    for(int i = 0; i < n; i++){
-        if(arr[i] == 9) continue;
-        int p = cnt[i][arr[i]]-1, q = icnt[i][arr[i]+1];
-        if(q > 0)
-            ans += fat[p+q] * expo(fat[p+1] * fat[p+q-(p+1)] % mod, mod-2) % mod;
-        ans %= mod;
-    }
-
-
-    cout << ans << endl;
-
-    return 0;
-}
-
+ 
+struct suffix_array_t { ///start-hash
+	int N, H; vector<int> sa, invsa;
+	bool cmp(int a, int b) { return invsa[a+H] < invsa[b+H]; }
+	void ternary_sort(int a, int b) {
+		if (a == b) return;
+		int md = sa[a+rng() % (b-a)], lo = a, hi = b;
+		for (int i = a; i < b; ++i) if (cmp(sa[i], md))
+			swap(sa[i], sa[lo++]);
+		for (int i = b-1; i >= lo; --i) if (cmp(md, sa[i]))
+			swap(sa[i], sa[--hi]);
+		ternary_sort(a, lo);
+		for (int i = lo; i < hi; ++i) invsa[sa[i]] = hi-1;
+		if (hi-lo == 1) sa[lo] = -1;
+		ternary_sort(hi, b);
+	}
+	suffix_array_t() {} ///end-hash
+	template<typename I> ///start-hash
+	suffix_array_t(I begin, I end): N(int(end-begin)+1), sa(N) {
+		vector<int> v(begin, end); 
+        v.push_back('$');
+		invsa = v; iota(sa.begin(), sa.end(), 0);
+		H = 0; ternary_sort(0, N);
+		for(H = 1; H <= N; H *= 2) for(int j=0, i=j; i!=N; i=j)
+				if (sa[i] < 0) {
+					while (j < N && sa[j] < 0) j += -sa[j];
+					sa[i] = -(j - i);
+				} else {j = invsa[sa[i]] + 1; ternary_sort(i, j);}
+		for (int i = 0; i < N; ++i) sa[invsa[i]] = i;
+	} 
+};
+ 
+ 
+ 
 signed main(){
     ios_base::sync_with_stdio(false), cin.tie(nullptr);
+ 
+    string s; cin >> s;
+    int n = s.size();
+    s += s;
+ 
+    suffix_array_t sa(s.begin(), s.end());
+ 
+    // vector<int> suf = sa.sa;
 
-    int t = 1;
-    // cin >> t;
-    while(t--){
-        solve();
-    }    
-
+    int i = 0;
+    for(; i < sa.sa.size(); i++){
+        if(sa.sa[i] < n){
+            break;
+        }
+    }
+ 
+    int g = sa.sa[i];
+ 
+    string ans = ""; ans.reserve(s.size());
+    do{
+        ans += s[g]; g++;
+    } while(g != sa.sa[i]+n);
+ 
+    cout << ans << endl;
+ 
     return 0;
 }

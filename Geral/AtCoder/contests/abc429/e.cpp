@@ -31,56 +31,60 @@ typedef tree<int,null_type, less_equal<int>, rb_tree_tag, tree_order_statistics_
 
 mt19937 rng((int) std::chrono::steady_clock::now().time_since_epoch().count());
 
-const int mod = 998244353;
+const int mod = 1e9+7;
 const ll inf = 1e18+5;
 
-ll expo(ll b, ll e){
-    ll ans = 1;
-    while(e){
-        if(e&1) ans = ans * b % mod;
-        b = b*b%mod;
-        e>>=1;
-    }
-    return ans;
-}
-
 signed solve(){
-    ll ans = 0;
-    string s; cin >> s;
-    int n = s.size();
-    vector<int> arr(n);
     
-    vector<vector<ll>> cnt(n, vector<ll>(10, 0ll)), icnt(n, vector<ll>(10, 0ll));
-    vector<ll> fat(3*n+5, 1LL);
-    for(int i = 2; i <= 3*n; i++) fat[i] = fat[i-1] * i % mod;
-    vector<ll> last(9, n);
+    int n,m; cin >> n >> m;
+    vector<vector<int>> graph(n);
 
-
-    for(int i = 0; i < s.size(); i++){
-        int x = s[i]-'0';
-        
-        arr[i] = x;
-        if(i > 0) for(int j = 0; j < 10; j++) cnt[i][j] = cnt[i-1][j];
-
-        cnt[i][x]++;
+    for(int i = 0; i < m; i++){
+        int a,b; cin >> a >> b; a--; b--;
+        graph[a].push_back(b);
+        graph[b].push_back(a);
     }
 
-    for(int i = n-1; i > -1; i--){
-        if(i != n-1) for(int j = 0; j < 10; j++) icnt[i][j] = icnt[i+1][j];
-        icnt[i][arr[i]]++;
-    }
+    vector<int> ans(n, 0);
 
+    vector<vector<int>> vis(n, vector<int>(2, -1)), d(n, vector<int>(2, -1));
+
+    string s; cin >> s;
+
+    queue<pair<int,int>> qw;
 
     for(int i = 0; i < n; i++){
-        if(arr[i] == 9) continue;
-        int p = cnt[i][arr[i]]-1, q = icnt[i][arr[i]+1];
-        if(q > 0)
-            ans += fat[p+q] * expo(fat[p+1] * fat[p+q-(p+1)] % mod, mod-2) % mod;
-        ans %= mod;
+        if(s[i] == 'S') {
+            qw.emplace(i, 0);
+            vis[i][0] = i; d[i][0] = 0;
+        }
     }
 
+    while(!qw.empty()){
+        auto[cc, it] = qw.front(); qw.pop();
 
-    cout << ans << endl;
+        // cout << cc << ' ' << it << ' ' << vis[cc][it] << ' ' << d[cc][it] << endl;
+
+        if(s[cc] == 'D') {
+            ans[cc] += d[cc][it];
+        }
+
+        for(int j: graph[cc]){
+            if(d[j][1] != -1 || vis[j][0] == vis[cc][it]) continue;
+            
+            int i = 0;
+            if(d[j][0] != -1) i = 1;
+
+            d[j][i] = d[cc][it]+1;
+            vis[j][i] = vis[cc][it];
+            qw.emplace(j, i);
+        }
+    }
+
+    for(int i = 0; i < n; i++){
+        if(s[i] == 'D') cout << ans[i] << endl;
+    }
+
 
     return 0;
 }

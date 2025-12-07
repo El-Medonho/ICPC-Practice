@@ -14,28 +14,39 @@
 // ⠄⣰⡗⠹⣿⣄⠄⠄⠄⢀⣿⣿⣿⣿⣿⣿⠟⣅⣥⣿⣿⣿⣿⠿⠋⠄⠄⣾⡌⢠⣿⡿⠃
 // ⠜⠋⢠⣷⢻⣿⣿⣶⣾⣿⣿⣿⣿⠿⣛⣥⣾⣿⠿⠟⠛⠉⠄⠄
 
-
 #include "bits/stdc++.h"
-#include <ext/pb_ds/tree_policy.hpp>
-#include <ext/pb_ds/assoc_container.hpp>
 
-using namespace __gnu_pbds;
 using namespace std;
 
-#define endl "\n"
-#define INF 0x3f3f3f3f
-#define INFL 0x3f3f3f3f3f3f3f3f
-#define fastio ios_base::sync_with_stdio(false), cin.tie(nullptr)
+#define endl '\n'
+
 typedef long long ll;
-typedef unsigned long long ull;
-typedef long double ld;
-typedef tree<int,null_type, less<int>, rb_tree_tag, tree_order_statistics_node_update> ordered_set;
-typedef tree<int,null_type, less_equal<int>, rb_tree_tag, tree_order_statistics_node_update> multiordered_set;  //--set.lower_bound(value) ao inves de find
 
 mt19937 rng((int) std::chrono::steady_clock::now().time_since_epoch().count());
 
-struct suffix_array_t {
+template<typename T, typename Cmp=less<T>>
+struct rmq_t : private Cmp {
+	int N = 0;
+	vector<vector<T>> table; 
+	const T& min(const T& a, const T& b) const { return Cmp::operator()(a, b) ? a : b; }
+	rmq_t() {}
+	rmq_t(const vector<T>& values) : N(int(values.size())), table(__lg(N) + 1) {
+		table[0] = values;
+		for (int a = 1; a < int(table.size()); ++a) {
+			table[a].resize(N - (1 << a) + 1);
+			for (int b = 0; b + (1 << a) <= N; ++b) 
+				table[a][b] = min(table[a-1][b], table[a-1][b + (1 << (a-1))]); 
+		}
+	}
+	T query(int a, int b) const { 
+		int lg = __lg(b - a);
+		return min(table[lg][a], table[lg][b - (1 << lg) ]);
+	}
+};
+
+struct suffix_array_t { ///start-hash
 	int N, H; vector<int> sa, invsa, lcp;
+	rmq_t<pair<int, int>> rmq;
 	bool cmp(int a, int b) { return invsa[a+H] < invsa[b+H]; }
 	void ternary_sort(int a, int b) {
 		if (a == b) return;
@@ -49,10 +60,11 @@ struct suffix_array_t {
 		if (hi-lo == 1) sa[lo] = -1;
 		ternary_sort(hi, b);
 	}
-	suffix_array_t() {}
-	template<typename I>
+	suffix_array_t() {} ///end-hash
+	template<typename I> ///start-hash
 	suffix_array_t(I begin, I end): N(int(end-begin)+1), sa(N) {
-		vector<int> v(begin, end); v.push_back(INT_MIN);
+		vector<int> v(begin, end); 
+        v.push_back(INT_MIN);
 		invsa = v; iota(sa.begin(), sa.end(), 0);
 		H = 0; ternary_sort(0, N);
 		for(H = 1; H <= N; H *= 2) for(int j=0, i=j; i!=N; i=j)
@@ -61,34 +73,48 @@ struct suffix_array_t {
 					sa[i] = -(j - i);
 				} else {j = invsa[sa[i]] + 1; ternary_sort(i, j);}
 		for (int i = 0; i < N; ++i) sa[invsa[i]] = i;
-	}
+		lcp.resize(N-1); int K = 0;
+		for (int i = 0; i < N-1; ++i) {
+			if(invsa[i] > 0) while(v[i+K] == v[sa[invsa[i]-1]+K])++K;
+			lcp[invsa[i]-1] = K; K = max(K - 1, 0);
+		}
+		vector<pair<int, int>> lcp_index(N-1);
+		for (int i = 0; i < N-1; ++i) lcp_index[i] = {lcp[i], 1+i};
+		rmq = rmq_t<pair<int, int>>(std::move(lcp_index));
+	} ///end-hash
+	auto rmq_query(int a, int b) const {return rmq.query(a,b);}
+	auto get_split(int a, int b) const {return rmq.query(a,b-1);}
+	int get_lcp(int a, int b) const { ///start-hash
+		if (a == b) return N - a;
+		a = invsa[a], b = invsa[b];
+		if (a > b) swap(a, b);
+		return rmq_query(a, b).first;
+	} ///end-hash
 };
 
-signed solve(){
-
-    string s; cin >> s;
-    int n = s.size();
-
-    suffix_array_t SA(s.begin(), s.end());
-
-    for(int i = 0; i < n+1; i++){
-        cout << SA.sa[i] << '\n';
-    }
-
-    cout << endl;
-    
-
-    return 0;
-}
 
 signed main(){
-    fastio;
+    ios_base::sync_with_stdio(false), cin.tie(nullptr);
 
-    int t = 1;
-    // cin >> t;
-    while(t--){
-        solve();
-    }    
+    string s; cin >> s;
+    suffix_array_t sa(s.begin(), s.end());
+
+    int q; cin >> q;
+    vector<vector<int>> arr(s.size()+5);
+
+    for(int i = 0; i < q; i++){
+        int a,b; cin >> a >> b; a--; b--;
+        arr[a].push_back(b);
+    }
+
+    for(int x: sa.sa){
+        for(int j: arr[x]){
+            cout << x+1 << ' ' << j+1 << endl;
+        }
+    }
+
+
+
 
     return 0;
 }

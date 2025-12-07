@@ -1,111 +1,124 @@
+// ⢸⣿⣿⣿⣿⠃⠄⢀⣴⡾⠃⠄⠄⠄⠄⠄⠈⠺⠟⠛⠛⠛⠛⠻⢿⣿⣿⣿⣿⣶⣤⡀⠄
+// ⢸⣿⣿⣿⡟⢀⣴⣿⡿⠁⠄⠄⠄⠄⠄⠄⠄⠄⠄⠄⠄⠄⠄⠄⣸⣿⣿⣿⣿⣿⣿⣿⣷
+// ⢸⣿⣿⠟⣴⣿⡿⡟⡼⢹⣷⢲⡶⣖⣾⣶⢄⠄⠄⠄⠄⠄⢀⣼⣿⢿⣿⣿⣿⣿⣿⣿⣿
+// ⢸⣿⢫⣾⣿⡟⣾⡸⢠⡿⢳⡿⠍⣼⣿⢏⣿⣷⢄⡀⠄⢠⣾⢻⣿⣸⣿⣿⣿⣿⣿⣿⣿
+// ⡿⣡⣿⣿⡟⡼⡁⠁⣰⠂⡾⠉⢨⣿⠃⣿⡿⠍⣾⣟⢤⣿⢇⣿⢇⣿⣿⢿⣿⣿⣿⣿⣿
+// ⣱⣿⣿⡟⡐⣰⣧⡷⣿⣴⣧⣤⣼⣯⢸⡿⠁⣰⠟⢀⣼⠏⣲⠏⢸⣿⡟⣿⣿⣿⣿⣿⣿
+// ⣿⣿⡟⠁⠄⠟⣁⠄⢡⣿⣿⣿⣿⣿⣿⣦⣼⢟⢀⡼⠃⡹⠃⡀⢸⡿⢸⣿⣿⣿⣿⣿⡟
+// ⣿⣿⠃⠄⢀⣾⠋⠓⢰⣿⣿⣿⣿⣿⣿⠿⣿⣿⣾⣅⢔⣕⡇⡇⡼⢁⣿⣿⣿⣿⣿⣿⢣
+// ⣿⡟⠄⠄⣾⣇⠷⣢⣿⣿⣿⣿⣿⣿⣿⣭⣀⡈⠙⢿⣿⣿⡇⡧⢁⣾⣿⣿⣿⣿⣿⢏⣾
+// ⣿⡇⠄⣼⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⠟⢻⠇⠄⠄⢿⣿⡇⢡⣾⣿⣿⣿⣿⣿⣏⣼⣿
+// ⣿⣷⢰⣿⣿⣾⣿⣿⣿⣿⣿⣿⣿⣿⣿⢰⣧⣀⡄⢀⠘⡿⣰⣿⣿⣿⣿⣿⣿⠟⣼⣿⣿
+// ⢹⣿⢸⣿⣿⠟⠻⢿⣿⣿⣿⣿⣿⣿⣿⣶⣭⣉⣤⣿⢈⣼⣿⣿⣿⣿⣿⣿⠏⣾⣹⣿⣿
+// ⢸⠇⡜⣿⡟⠄⠄⠄⠈⠙⣿⣿⣿⣿⣿⣿⣿⣿⠟⣱⣻⣿⣿⣿⣿⣿⠟⠁⢳⠃⣿⣿⣿
+// ⠄⣰⡗⠹⣿⣄⠄⠄⠄⢀⣿⣿⣿⣿⣿⣿⠟⣅⣥⣿⣿⣿⣿⠿⠋⠄⠄⣾⡌⢠⣿⡿⠃
+// ⠜⠋⢠⣷⢻⣿⣿⣶⣾⣿⣿⣿⣿⠿⣛⣥⣾⣿⠿⠟⠛⠉⠄⠄
+
 #include "bits/stdc++.h"
+
 using namespace std;
 
-#define MOD 1000000009
-#define mod(x,mvvm) (((x%mvvm)+mvvm)%mvvm)
-#define f first
-#define s second
-#define pb push_back
-#define pii pair<int,int>
-#define pll pair<long long,long long>
-#define vii vector<int>
-#define vll vector<long long>
-#define endl "\n"
-#define esp " "
-#define INF 0x3f3f3f3f
-#define INFL 0x3f3f3f3f3f3f3f3f
-#define fastio ios_base::sync_with_stdio(false), cin.tie(nullptr)
+#define endl '\n'
+
 typedef long long ll;
-typedef unsigned long long ull;
 
-vector<vii> graph;
-vii weight(0);
-int root = 0, tsz = 0;
-vii ban(0);
-int target;
+const ll INFL = 1e18;
 
-int dfs(int curr, int last){
-    weight[curr] = 0;
-    for(int j: graph[curr]){
-        if(j == last || ban[j]) continue;
-        weight[curr] += dfs(j,curr);
+vector<int> nos;
+
+struct Centroid{
+    int n;
+    vector<int> used, pai, sub;
+    vector<vector<int>> vec;
+
+    Centroid(int n): n(n), used(n+1), pai(n+1), sub(n+1), vec(n+1) {nos.reserve(n+1);}
+
+    void add_edge(int v, int u){
+        vec[v].push_back(u);
+        vec[u].push_back(v);
     }
-    return weight[curr]+1;
-}
 
-void centroid(int x){
-    root = x;
-    bool cont = true;
-    dfs(root, -1);
-    int last = -1;
-    while(cont){
-        cont = false;
-        for(int j: graph[root]){
-            if(j == last || ban[j]) continue;
-            if(weight[j] >= (weight[x]+1)/2){
-                last = root;
-                cont = true;
-                root = j;
-                break;
+    int dfs_sz(int x, int p = 0){
+        sub[x] = 1;
+        for(int i: vec[x]){
+            if(i==p || used[i]) continue;
+            sub[x]+=dfs_sz(i, x);
+        }
+        return sub[x];
+    }
+
+    int find_c(int x, int total, int p=0){
+        for(int i: vec[x]){
+            if(i==p || used[i]) continue;
+            if(2*sub[i]>total) return find_c(i, total, x);
+        }
+        return x;
+    }
+
+    void build(int x = 1, int p = 0){
+        int c = find_c(x, dfs_sz(x));
+
+        nos.push_back(c);
+
+        used[c] = 1;
+        pai[c]=p;
+        for(int i: vec[c]){
+            if(!used[i]) build(i, c);
+        }
+    }
+};
+
+signed main(){
+    ios_base::sync_with_stdio(false), cin.tie(nullptr);
+
+    int n; cin >> n;
+    int k; cin >> k;
+    Centroid centroid(n);
+
+    for(int i = 1; i < n; i++){
+        int a,b; cin >> a >> b;
+        centroid.add_edge(a, b);
+    }
+
+    centroid.build();
+    vector<int> vis(n+1, 0);
+    vector<ll> dp(k+1, 0LL), dp2(k+1, 0LL);
+
+    ll ans = 0;
+    int mx = -1, mx2 = -1;
+
+    auto dfs = [&](auto &&self, int cc, int last, int d = 0) -> void {
+        if(d > k) return;
+
+        ans += dp[k-d];
+        if(d == 0) dp[0]++;
+        else dp2[d]++;
+
+        for(int j: centroid.vec[cc]){
+            if(j == last || vis[j]) continue;
+            if(d == 0){
+                for(int h = 0; h <= mx; h++){
+                    dp[h] += dp2[h];
+                    dp2[h] = 0;
+                }
+                mx = -1;
             }
+            self(self, j, cc, d+1);
         }
-    }
-    return;
-}
+        
+        mx = max(mx, d);
+        mx2 = max(mx2, mx);
+    };
 
-vii depth(0), occur(0);
-queue<int> qw;
-ll ans = 0;
-int mxdepth = 0;
-
-void dfs2(int curr, int last){
-    if(depth[curr] <= target) ans += occur[target - depth[curr]];
-    mxdepth = max(depth[curr], mxdepth);
-    qw.push(depth[curr]);
-    for(int j :graph[curr]){
-        if(j == last || ban[j]) continue;
-        if((curr) == root) {
-            while(!qw.empty()){
-                occur[qw.front()]++; qw.pop();
-            }
+    for(int cc: nos){
+        dfs(dfs, cc, 0);
+        vis[cc] = 1;
+        for(int h = 0; h <= mx2; h++){
+            dp[h] = 0;
+            dp2[h] = 0;
         }
-        depth[j] = depth[curr] + 1;
-        if(depth[j] <= target) dfs2(j,curr);
-    }
-}
-
-
-int main(){
-    fastio;
-
-    int n; cin >> n >> target; tsz = n;
-
-    graph.resize(n);
-    for(int i = 0; i < n-1; i++){
-        int a,b; cin >> a >> b; a--; b--;
-        graph[a].pb(b);
-        graph[b].pb(a);
-    }
-
-    ban.resize(n,0); depth.resize(n,0);  occur.resize(n,0); weight.resize(n,0);
-    queue<int> q;
-    q.push(0);
-
-    while(!q.empty()){
-        fill(occur.begin(), occur.begin() + (mxdepth + 1), 0);
-        mxdepth = 0;
-
-        int curr = q.front(); q.pop();
-
-        centroid(curr);
-        while(!qw.empty()) qw.pop();
-        depth[root] = 0;
-        dfs2(root, -1);
-
-        ban[root] = 1;
-        for(int j: graph[root]){
-            if(!ban[j]) q.push(j);
-        }
+        mx2 = -1;
+        mx = -1;
     }
 
     cout << ans << endl;
