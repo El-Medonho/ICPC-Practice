@@ -1,82 +1,63 @@
-// ⢸⣿⣿⣿⣿⠃⠄⢀⣴⡾⠃⠄⠄⠄⠄⠄⠈⠺⠟⠛⠛⠛⠛⠻⢿⣿⣿⣿⣿⣶⣤⡀⠄
-// ⢸⣿⣿⣿⡟⢀⣴⣿⡿⠁⠄⠄⠄⠄⠄⠄⠄⠄⠄⠄⠄⠄⠄⠄⣸⣿⣿⣿⣿⣿⣿⣿⣷
-// ⢸⣿⣿⠟⣴⣿⡿⡟⡼⢹⣷⢲⡶⣖⣾⣶⢄⠄⠄⠄⠄⠄⢀⣼⣿⢿⣿⣿⣿⣿⣿⣿⣿
-// ⢸⣿⢫⣾⣿⡟⣾⡸⢠⡿⢳⡿⠍⣼⣿⢏⣿⣷⢄⡀⠄⢠⣾⢻⣿⣸⣿⣿⣿⣿⣿⣿⣿
-// ⡿⣡⣿⣿⡟⡼⡁⠁⣰⠂⡾⠉⢨⣿⠃⣿⡿⠍⣾⣟⢤⣿⢇⣿⢇⣿⣿⢿⣿⣿⣿⣿⣿
-// ⣱⣿⣿⡟⡐⣰⣧⡷⣿⣴⣧⣤⣼⣯⢸⡿⠁⣰⠟⢀⣼⠏⣲⠏⢸⣿⡟⣿⣿⣿⣿⣿⣿
-// ⣿⣿⡟⠁⠄⠟⣁⠄⢡⣿⣿⣿⣿⣿⣿⣦⣼⢟⢀⡼⠃⡹⠃⡀⢸⡿⢸⣿⣿⣿⣿⣿⡟
-// ⣿⣿⠃⠄⢀⣾⠋⠓⢰⣿⣿⣿⣿⣿⣿⠿⣿⣿⣾⣅⢔⣕⡇⡇⡼⢁⣿⣿⣿⣿⣿⣿⢣
-// ⣿⡟⠄⠄⣾⣇⠷⣢⣿⣿⣿⣿⣿⣿⣿⣭⣀⡈⠙⢿⣿⣿⡇⡧⢁⣾⣿⣿⣿⣿⣿⢏⣾
-// ⣿⡇⠄⣼⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⠟⢻⠇⠄⠄⢿⣿⡇⢡⣾⣿⣿⣿⣿⣿⣏⣼⣿
-// ⣿⣷⢰⣿⣿⣾⣿⣿⣿⣿⣿⣿⣿⣿⣿⢰⣧⣀⡄⢀⠘⡿⣰⣿⣿⣿⣿⣿⣿⠟⣼⣿⣿
-// ⢹⣿⢸⣿⣿⠟⠻⢿⣿⣿⣿⣿⣿⣿⣿⣶⣭⣉⣤⣿⢈⣼⣿⣿⣿⣿⣿⣿⠏⣾⣹⣿⣿
-// ⢸⠇⡜⣿⡟⠄⠄⠄⠈⠙⣿⣿⣿⣿⣿⣿⣿⣿⠟⣱⣻⣿⣿⣿⣿⣿⠟⠁⢳⠃⣿⣿⣿
-// ⠄⣰⡗⠹⣿⣄⠄⠄⠄⢀⣿⣿⣿⣿⣿⣿⠟⣅⣥⣿⣿⣿⣿⠿⠋⠄⠄⣾⡌⢠⣿⡿⠃
-// ⠜⠋⢠⣷⢻⣿⣿⣶⣾⣿⣿⣿⣿⠿⣛⣥⣾⣿⠿⠟⠛⠉⠄⠄
-
 #include "bits/stdc++.h"
 
 using namespace std;
 
-#define endl '\n'
-
+// #define endl '\n'
 typedef long long ll;
-typedef pair<ll,ll> pii;
+typedef tuple<int,int,int> tii;
 
+const int lim = 1e9, high = 5e4;
+const __int128_t inf = 1e30;
+map<int,tii> mp;
+map<tii, bool> vis;
 
+void find(__int128_t x, int a, int b, int c){
+    if(vis[{a, b, c}] == 1) return;
+    vis[{a, b, c}] = 1;
+	if(x <= lim) {
+		if(mp.find((int)x) == mp.end()) mp[x] = {a, b, c};
+		else mp[x] = min(mp[x], {a, b, c});
+	}
+
+    if(inf/x >= (a+1) && a+1 <= high) find(x*(a+1), a+1, b, c);
+    if(x%(b+1) == 0 && b+1 < a) find(x/(b+1), a, b+1, c);
+    if(c+1 <= b && x%(c+1) == 0) find(x/(c+1), a, b, c+1);
+    // cout << x << ' ' << a << ' ' << b << ' ' << c << endl; 
+}
+
+signed solve(int TEST_CASE){
+
+    int n; cin >> n;
+
+	find(6, 4, 2, 2);
+    for(int a = 100; a <= high; a++){
+		ll cc = 1;
+        for(int b = a; b > a-4; b--){
+			cc *= b;
+			ll temp = cc;
+			for(int c = 2; c < 30; c++){
+				if(temp % c != 0) break;
+				temp /= c;
+				if(temp <= lim) find(temp, a, b-1, c);
+			}
+		}
+    }
+
+    
+    if(mp.find(n) == mp.end()) cout << "-1 -1 -1\n";
+    else{
+        cout << get<0>(mp[n]) << ' ' << get<1>(mp[n]) << ' ' << get<2>(mp[n]) << endl; 
+    }
+
+    return 0;
+}
 
 signed main(){
     ios_base::sync_with_stdio(false), cin.tie(nullptr);
 
-    int n,k; cin >> n >> k;
-
-	ll mx = -1e9, nx = 1e9, my = -1e9, ny = 1e9;
-
-	
-	vector<pii> arr(n);
-	
-	for(int i = 0; i < n; i++){
-		ll a,b; cin >> a >> b;
-		mx = max(mx, a); nx = min(nx, a);
-		my = max(my, b); ny = min(ny, b);
-		arr[i] = {a, b};
-	}
-	if(n == 1){
-		cout << 1 << endl;
-		return 0;
-	}
-
-	ll x = mx-nx+1, y = my-ny+1;
-
-	ll kk = max(x, y) - min(x, y);
-
-	ll ans = 0;
-
-	if(kk >= k) ans = max(x, y) * (min(x, y) + k);
-	else{
-		ll h = max(x, y); ll hh = h;
-		kk = k - kk;
-		h += kk/2; kk -= kk/2; hh += kk;
-		ans = h * hh;
-	}
-
-	vector<pii> dir = {{1,1}, {-1,1}, {1,-1}, {-1,-1}};
-
-	for(auto [a, b]: arr){
-		ll cans = 0;
-		
-		for(auto[p, q]: dir){
-			ll aa = a + (k*p), bb = b + (k*q);
-			ll mmx = max(mx, aa), mnx = min(nx, aa);
-			ll mmy = max(my, bb), mny = min(ny, bb);
-			cans = max(cans, (mmx-mnx+1) * (mmy-mny+1));
-		}
-
-		ans = max(ans, cans);
-	}
-
-	cout << ans << endl;
-
+    int t = 1;
+    // cin >> t;
+    for(int i = 1; i <= t; i++) solve(i);
 
     return 0;
 }
